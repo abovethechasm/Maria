@@ -1,0 +1,1 @@
+export * from "https://raw.githubusercontent.com/queenochaos/auditor/main/mod.ts"
