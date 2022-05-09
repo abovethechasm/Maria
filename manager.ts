@@ -1,35 +1,80 @@
 import { createID } from "./deps/auditor.ts";
+import { DB } from "./deps/sqlite.ts";
 
-interface User {
-  name: string;
-  id: string;
+const db = new DB("userdata.sqlite");
+
+interface UserData {
+  first_name: string;
+  last_name: string;
+  user_id: number;
+  user_email: string;
 }
 
-const data: User[] = [{
-  name: "John Smith",
-  id: createID(),
-}, {
-  name: "John Doe",
-  id: createID(),
-}, {
-  name: "John Wick",
-  id: createID(),
-}, {
-  name: "John Cena",
-  id: createID(),
-}];
-console.log(data);
-export default {
-  find(id: string): User | undefined {
-    return data.find((x) => x.id === id);
+interface AccountData {
+  user_email: string;
+  user_password: string;
+}
+
+export const baseAccountData: AccountData = {
+  user_email: "",
+  user_password: "",
+}
+
+export const baseUserData: UserData = {
+  first_name: "",
+  last_name: "",
+  user_id: 0,
+  user_email: "",
+};
+
+class User {
+  firstName: string;
+  lastName: string;
+  email: string;
+  id: number;
+  constructor(data: UserData) {
+    this.firstName = data.first_name;
+    this.lastName = data.last_name;
+    this.email = data.user_email;
+    this.id = data.user_id;
+  }
+}
+
+export const Manager = {
+  async findUser(id: string): Promise<User | undefined> {
+    const item = await db.query("SELECT * FROM users WHERE user_id=?", [id]);
+    console.log(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}))
+    if (item && item.length > 0) return new User(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}));
+    return undefined;
   },
-  all() {
-    return data;
+  async allUser(): Promise<User[] | []> {
+    const items = await db.query("SELECT * FROM users");
+    if (items && items.length > 0) {
+      return items.map((item) => new User(Object.assign(baseUserData, {user_id: item[0], user_email: item[2], user_password: item[1]})));
+    }
+    return [];
   },
-  add(name: string): boolean {
-    const newUser = { name, id: createID() };
-    console.log(newUser);
-    data.push(newUser);
+  async addUser(data: AccountData): Promise<boolean> {
+    console.log(data)
+    const added = await db.query(`
+    INSERT INTO users (
+      user_email,
+      user_password
+    ) VALUES (
+      '${data.user_email}', 
+      '${data.user_password}'
+    )
+  `);
+    console.log(added);
     return true;
   },
+  async validateUser(email: string, password: string): Promise<number> {
+    const item = await db.query("SELECT * FROM users WHERE email=?", [email]);
+    if (item && item.length > 0) {
+      const itemWithPassword = await db.query("SELECT * FROM users WHERE email=? AND password=?", [email, password]);
+      if (itemWithPassword && itemWithPassword.length > 0) return 1; // User exists, do login
+      return 2; // User exists, wrong pass
+    };
+    return 3; // User doesn't exist
+  }
 };

@@ -1,0 +1,16 @@
+CREATE TABLE loans (
+	from_user INTEGER NOT NULL,
+	to_user INTEGER NOT NULL,
+	amount INTEGER NOT NULL,
+	created_at INTEGER NOT NULL,
+	tenure_in_months INTEGER NOT NULL,
+	interest_rate REAL NOT NULL
+);
+
+CREATE TABLE users (
+	first_name TEXT(256) NOT NULL,
+	last_name TEXT(256) NOT NULL,
+	user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    user_password TEXT NOT NULL,
+    user_email TEXT(256) NOT NULL
+);
