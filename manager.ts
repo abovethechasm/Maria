@@ -43,7 +43,23 @@ class User {
 export const Manager = {
   async findUser(id: string): Promise<User | undefined> {
     const item = await db.query("SELECT * FROM users WHERE user_id=?", [id]);
-    console.log(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}))
+//    console.log(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}))
+    if (item && item.length > 0) return new User(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}));
+    return undefined;
+  },
+  async findPassWithEmail(email: string): Promise<string | undefined> {
+
+    const item = await db.query("SELECT user_password FROM users WHERE user_email=?", [email]);
+    console.log(item)
+
+    if (item && item.length > 0) return item[0][1] as string;
+    return undefined;
+  },
+  async findWithEmail(email: string): Promise<User | undefined> {
+    console.log(email)
+    const item = await db.query("SELECT * FROM users WHERE user_email=?", [email]);
+    console.log(item)
+//    console.log(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}))
     if (item && item.length > 0) return new User(Object.assign(baseUserData, {user_id: item[0][0], user_email: item[0][2], user_password: item[0][1]}));
     return undefined;
   },

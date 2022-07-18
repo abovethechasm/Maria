@@ -30,6 +30,27 @@ router
         message: "Missing Parameters (check whether email and password exist)",
       };
     }
+  })
+  .post("/users/login", async (ctx) => {
+    const params = ctx.request.body({ type: "json" });
+
+    const data = await params.value;
+    console.log(data)
+    if(!data.email) {
+      ctx.response.body = {
+        status: 400,
+        message: "Missing Parameters (check whether email and password exist)",
+      };
+    }
+    const pass = await Manager.findPassWithEmail(data.email)
+    if(!pass) {
+      ctx.response.body = {
+        status: 401,
+        message: "Unauthorized",
+      };
+    }
+      const success = await Manager.findWithEmail(data.email);
+      ctx.response.body = { status: success ? 200 : 500, body: success };
   });
 
 export default router;
